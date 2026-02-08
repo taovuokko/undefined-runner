@@ -1,10 +1,14 @@
 # simple makefile for undefined-runner
-# probably going to grow later
+# kept intentionally straightforward
+# this will probably grow as the project grows
 
 TARGET = undefined-runner
 SRC    = main.cpp
 
-CXX = g++
+# compilers
+GCC   = g++
+CLANG = clang++
+
 STD = -std=c++20
 
 # raylib (system install)
@@ -18,26 +22,42 @@ WARNINGS = -Wall -Wextra -Wpedantic -Wshadow
 DEBUG_FLAGS   = -g -O0 -DDEBUG
 RELEASE_FLAGS = -O2 -DNDEBUG
 
+# default flags = release build
 CXXFLAGS = $(STD) $(WARNINGS) $(RELEASE_FLAGS)
 
-.PHONY: all debug run clean fast
+.PHONY: all gcc clang debug fast run clean
 
-all: $(TARGET)
+# build both by default
+all: gcc clang
 
+# gcc build
+gcc: $(TARGET)-gcc
+
+$(TARGET)-gcc: $(SRC)
+	$(GCC) $(CXXFLAGS) $< -o $@ $(LIBS)
+
+# clang build
+clang: $(TARGET)-llvm
+
+$(TARGET)-llvm: $(SRC)
+	$(CLANG) $(CXXFLAGS) $< -o $@ $(LIBS)
+
+# debug build (gcc by default)
 debug:
-	$(CXX) $(STD) $(WARNINGS) $(DEBUG_FLAGS) $(SRC) -o $(TARGET) $(LIBS)
-
-# normal build
-$(TARGET): $(SRC)
-	$(CXX) $(CXXFLAGS) $< -o $@ $(LIBS)
-
-run: $(TARGET)
-	./$(TARGET)
+	$(GCC) $(STD) $(WARNINGS) $(DEBUG_FLAGS) $(SRC) -o $(TARGET)-debug $(LIBS)
 
 # quick build when experimenting
 fast:
-	$(CXX) $(STD) $(SRC) -o $(TARGET) $(LIBS)
+	$(GCC) $(STD) $(SRC) -o $(TARGET)-fast $(LIBS)
+
+# run default gcc build
+run: $(TARGET)-gcc
+	./$(TARGET)-gcc
 
 clean:
-	rm -f $(TARGET)
+	rm -f \
+		$(TARGET)-gcc \
+		$(TARGET)-llvm \
+		$(TARGET)-debug \
+		$(TARGET)-fast
 

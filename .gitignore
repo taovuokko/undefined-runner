@@ -36,6 +36,6 @@
 *.exe
 *.out
 *.app
-
+undefined-runner*
 # debug information files
 *.dwo
